@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWS Certified Cloud Practitioner - Bài kiểm tra</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AWS Certified Cloud Practitioner</h1>
+      <p>Bài kiểm tra thực hành</p>
+      <p>Để đạt yêu cầu, bạn cần đạt tối thiểu 70% số điểm tổng thể.</p>
+    </header>
+    
+    <!-- Màn hình chọn bộ đề -->
+    <div id="quiz-selection" class="quiz-selection">
+      <h2>Chọn bộ đề kiểm tra</h2>
+      <div class="test-list">
+        <div class="test-item">
+          <input type="radio" id="test-full" name="test-selection" value="full_questions.json" checked>
+          <label for="test-full">Bộ đề 001</label>
+        </div>
+        <div class="test-item">
+          <input type="radio" id="test-002" name="test-selection" value="test002_questions.json">
+          <label for="test-002">Bộ đề 002</label>
+        </div>
+        <div class="test-item">
+          <input type="radio" id="test-003" name="test-selection" value="test003_questions.json">
+          <label for="test-003">Bộ đề 003</label>
+        </div>
+        <div class="test-item">
+          <input type="radio" id="test-004" name="test-selection" value="test004_questions.json">
+          <label for="test-004">Bộ đề 004</label>
+        </div>
+        <div class="test-item">
+          <input type="radio" id="test-005" name="test-selection" value="test005_questions.json">
+          <label for="test-005">Bộ đề 005</label>
+        </div>
+        <div class="test-item">
+          <input type="radio" id="test-006" name="test-selection" value="test006_questions.json">
+          <label for="test-006">Bộ đề 006</label>
+        </div>
+      </div>
+      <button id="start-quiz-button" class="btn btn-submit">Bắt đầu làm bài</button>
+    </div>
+    
+    <!-- Thông tin quiz -->
+    <div class="quiz-info" style="display: none;">
+      <div class="quiz-progress">
+        Câu hỏi: <span id="current-question">0</span>/<span id="total-questions">0</span> | 
+        Đã trả lời: <span id="completed-questions">0</span> câu
+      </div>
+      <div class="quiz-timer">
+        Thời gian: <span id="timer">00:00</span>
+      </div>
+    </div>
+    
+    <!-- Câu hỏi -->
+    <div id="quiz-container" style="display: none;">
+      <div class="main-quiz-content">
+        <!-- Navigation buttons -->
+        <div class="navigation">
+          <button id="prev-button" class="btn btn-secondary">Câu trước</button>
+          <button id="next-button" class="btn btn-secondary">Câu sau</button>
+        </div>
+        
+        <div class="question-container" id="question-container">
+          <!-- Nội dung câu hỏi sẽ được tạo bằng JavaScript -->
+        </div>
+      </div>
+      
+      <!-- Khung chỉ mục câu hỏi sẽ được tạo bằng JavaScript -->
+      
+      <!-- Submit button -->
+      <button id="submit-button" class="btn btn-submit">Nộp bài</button>
+    </div>
+    
+    <footer>
+
+    </footer>
+  </div>
+  
+  <script src="js/quiz.js"></script>
+</body>
+</html> 

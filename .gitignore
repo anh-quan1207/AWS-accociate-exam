@@ -1,0 +1,10 @@
+# IDE files
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (không commit theo yêu cầu)
+docker-compose.yml 
