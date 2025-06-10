@@ -479,6 +479,63 @@ function displayResults(correctAnswers, score) {
   }
   resultContainer.appendChild(passBadge);
   
+  // Thêm khung hiển thị tổng quan câu hỏi
+  const questionsOverviewContainer = document.createElement('div');
+  questionsOverviewContainer.className = 'questions-overview-container';
+  
+  // Tiêu đề khung
+  const overviewTitle = document.createElement('div');
+  overviewTitle.className = 'index-title';
+  overviewTitle.textContent = 'Câu hỏi:';
+  questionsOverviewContainer.appendChild(overviewTitle);
+  
+  // Tạo lưới số câu hỏi
+  const overviewGrid = document.createElement('div');
+  overviewGrid.className = 'overview-grid';
+  
+  // Tạo các số từ 1 đến số câu hỏi
+  for (let i = 0; i < quizData.questions.length; i++) {
+    const question = quizData.questions[i];
+    const userAnswer = quizState.answers[i];
+    const overviewItem = document.createElement('div');
+    overviewItem.className = 'overview-item';
+    overviewItem.textContent = i + 1;
+    overviewItem.dataset.index = i;
+    
+    // Kiểm tra trạng thái của câu trả lời
+    if (userAnswer === null) {
+      // Chưa trả lời
+      overviewItem.classList.add('unanswered');
+    } else {
+      const isMultiSelect = question.assessment_type === 'multi-select';
+      const correctIndices = question.correct_response.map(response => {
+        return 'abcdefghijklmnopqrstuvwxyz'.indexOf(response);
+      });
+      
+      // Kiểm tra đúng/sai
+      let isCorrect = false;
+      
+      if (isMultiSelect) {
+        // So sánh mảng đối với câu hỏi nhiều đáp án
+        isCorrect = arraysEqual(userAnswer.sort(), correctIndices.sort());
+      } else {
+        // So sánh đáp án đối với câu hỏi một đáp án
+        isCorrect = userAnswer === correctIndices[0];
+      }
+      
+      if (isCorrect) {
+        overviewItem.classList.add('correct');
+      } else {
+        overviewItem.classList.add('incorrect');
+      }
+    }
+    
+    overviewGrid.appendChild(overviewItem);
+  }
+  
+  questionsOverviewContainer.appendChild(overviewGrid);
+  resultContainer.appendChild(questionsOverviewContainer);
+  
   // Thêm nút để xem chi tiết các câu trả lời
   const reviewButton = document.createElement('button');
   reviewButton.className = 'btn btn-primary';
@@ -510,6 +567,10 @@ function displayDetailedResults() {
   // Xóa nội dung cũ
   quizContainer.innerHTML = '';
   
+  // Tạo container cho layout chi tiết kết quả
+  const detailedResultsLayout = document.createElement('div');
+  detailedResultsLayout.className = 'detailed-results-layout';
+  
   // Tạo container cho kết quả chi tiết
   const detailedResultsContainer = document.createElement('div');
   detailedResultsContainer.className = 'detailed-results';
@@ -519,6 +580,91 @@ function displayDetailedResults() {
   header.innerHTML = '<h1>Kết quả chi tiết</h1>';
   detailedResultsContainer.appendChild(header);
   
+  // Tạo khung hiển thị tổng quan câu hỏi
+  const questionsOverviewContainer = document.createElement('div');
+  questionsOverviewContainer.className = 'questions-overview-container sidebar-overview';
+  
+  // Tiêu đề khung
+  const overviewTitle = document.createElement('div');
+  overviewTitle.className = 'index-title';
+  overviewTitle.textContent = 'Câu hỏi:';
+  questionsOverviewContainer.appendChild(overviewTitle);
+  
+  // Tạo lưới số câu hỏi
+  const overviewGrid = document.createElement('div');
+  overviewGrid.className = 'overview-grid';
+  
+  // Tạo các số từ 1 đến số câu hỏi
+  for (let i = 0; i < quizData.questions.length; i++) {
+    const question = quizData.questions[i];
+    const userAnswer = quizState.answers[i];
+    const overviewItem = document.createElement('div');
+    overviewItem.className = 'overview-item';
+    overviewItem.textContent = i + 1;
+    overviewItem.dataset.index = i;
+    
+    // Kiểm tra trạng thái của câu trả lời
+    if (userAnswer === null) {
+      // Chưa trả lời
+      overviewItem.classList.add('unanswered');
+    } else {
+      const isMultiSelect = question.assessment_type === 'multi-select';
+      const correctIndices = question.correct_response.map(response => {
+        return 'abcdefghijklmnopqrstuvwxyz'.indexOf(response);
+      });
+      
+      // Kiểm tra đúng/sai
+      let isCorrect = false;
+      
+      if (isMultiSelect) {
+        // So sánh mảng đối với câu hỏi nhiều đáp án
+        isCorrect = arraysEqual(userAnswer.sort(), correctIndices.sort());
+      } else {
+        // So sánh đáp án đối với câu hỏi một đáp án
+        isCorrect = userAnswer === correctIndices[0];
+      }
+      
+      if (isCorrect) {
+        overviewItem.classList.add('correct');
+      } else {
+        overviewItem.classList.add('incorrect');
+      }
+    }
+    
+    // Thêm sự kiện click để cuộn đến câu hỏi đó
+    overviewItem.addEventListener('click', () => {
+      const questionElement = document.getElementById(`question-${i}`);
+      if (questionElement) {
+        // Cuộn đến câu hỏi được chọn
+        questionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Thêm hiệu ứng nhấp nháy
+        questionElement.classList.add('highlight');
+        setTimeout(() => {
+          questionElement.classList.remove('highlight');
+        }, 1500);
+      }
+    });
+    
+    overviewGrid.appendChild(overviewItem);
+  }
+  
+  questionsOverviewContainer.appendChild(overviewGrid);
+  
+  // Thêm nút quay lại tổng kết
+  const navigationContainer = document.createElement('div');
+  navigationContainer.className = 'overview-navigation';
+  
+  const backButton = document.createElement('button');
+  backButton.className = 'btn btn-primary';
+  backButton.textContent = 'Quay lại';
+  backButton.addEventListener('click', () => {
+    location.reload();
+  });
+  
+  navigationContainer.appendChild(backButton);
+  questionsOverviewContainer.appendChild(navigationContainer);
+  
   // Tạo container cho danh sách câu hỏi
   const questionsListContainer = document.createElement('div');
   questionsListContainer.className = 'questions-list';
@@ -527,6 +673,7 @@ function displayDetailedResults() {
     const userAnswer = quizState.answers[index];
     const questionContainer = document.createElement('div');
     questionContainer.className = 'question-container';
+    questionContainer.id = `question-${index}`; // Thêm ID để có thể cuộn đến
     
     // Tiêu đề câu hỏi
     const questionNumber = document.createElement('div');
@@ -612,25 +759,12 @@ function displayDetailedResults() {
   
   detailedResultsContainer.appendChild(questionsListContainer);
   
-  // Nút quay lại
-  const navigationContainer = document.createElement('div');
-  navigationContainer.className = 'detailed-navigation';
-  
-  const backButton = document.createElement('button');
-  backButton.className = 'btn btn-primary';
-  backButton.textContent = 'Quay lại tổng kết';
-  backButton.addEventListener('click', () => {
-    location.reload();
-  });
-  
-  navigationContainer.appendChild(backButton);
-  detailedResultsContainer.appendChild(navigationContainer);
+  // Thêm cả hai phần vào layout
+  detailedResultsLayout.appendChild(detailedResultsContainer);
+  detailedResultsLayout.appendChild(questionsOverviewContainer);
   
   // Thêm vào container chính
-  quizContainer.appendChild(detailedResultsContainer);
-  
-  // Đặt max-width cho container để tránh vỡ layout
-  detailedResultsContainer.style.maxWidth = '100%';
+  quizContainer.appendChild(detailedResultsLayout);
 }
 
 // Khởi tạo bộ đếm thời gian
