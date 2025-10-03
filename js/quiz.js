@@ -9,7 +9,12 @@ let quizState = {
   },
   quizStarted: false,
   quizCompleted: false,
-  selectedQuestionFile: 'full_questions.json' // File câu hỏi mặc định
+  selectedQuestionFile: 'full_questions.json', // File câu hỏi mặc định
+  mode: 'exam', // 'exam' hoặc 'study'
+  studyMode: {
+    answerRevealed: false,
+    currentAnswer: null
+  }
 };
 
 // Biến lưu dữ liệu quiz được load từ file
@@ -28,8 +33,23 @@ function shuffleArray(array) {
 // Load dữ liệu từ file câu hỏi đã chọn
 async function loadQuizData() {
   try {
-    const response = await fetch(quizState.selectedQuestionFile);
-    const data = await response.json();
+    let data;
+    
+    // Kiểm tra xem có đang chạy từ file system không
+    if (window.location.protocol === 'file:') {
+      // Nếu chạy từ file system, sử dụng dữ liệu từ data.js
+      console.log('Chạy từ file system, sử dụng dữ liệu từ data.js');
+      data = await loadDataFromFile(quizState.selectedQuestionFile);
+    } else {
+      // Nếu chạy từ web server, sử dụng fetch
+      try {
+        const response = await fetch(quizState.selectedQuestionFile);
+        data = await response.json();
+      } catch (fetchError) {
+        console.log('Fetch thất bại, sử dụng dữ liệu fallback:', fetchError);
+        data = await loadDataFromFile(quizState.selectedQuestionFile);
+      }
+    }
     
     // Đảo thứ tự câu hỏi
     const shuffledQuestions = shuffleArray(data.questions);
@@ -48,10 +68,31 @@ async function loadQuizData() {
   }
 }
 
+// Load dữ liệu từ file khi chạy từ file system
+async function loadDataFromFile(filename) {
+  // Sử dụng dữ liệu từ data.js cho tất cả các file
+  const dataFiles = {
+    'full_questions.json': fullQuestionsData,
+    'test002_questions.json': test002QuestionsData,
+    'test003_questions.json': test003QuestionsData,
+    'test004_questions.json': test004QuestionsData,
+    'test005_questions.json': test005QuestionsData,
+    'test006_questions.json': test006QuestionsData,
+    'questions.json': questionsData
+  };
+  
+  if (dataFiles[filename]) {
+    return dataFiles[filename];
+  } else {
+    throw new Error(`File ${filename} không tồn tại`);
+  }
+}
+
 // Thiết lập sự kiện cho màn hình chọn bộ đề
 function setupQuizSelection() {
   const startButton = document.getElementById('start-quiz-button');
   const radioButtons = document.querySelectorAll('input[name="test-selection"]');
+  const modeButtons = document.querySelectorAll('input[name="mode-selection"]');
   
   // Xử lý sự kiện click vào các test-item
   document.querySelectorAll('.test-item').forEach(item => {
@@ -69,12 +110,25 @@ function setupQuizSelection() {
     });
   });
   
+  // Xử lý sự kiện khi thay đổi chế độ
+  modeButtons.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      quizState.mode = e.target.value;
+    });
+  });
+  
   // Xử lý sự kiện khi nhấn nút "Bắt đầu"
   startButton.addEventListener('click', async () => {
     // Lấy giá trị bộ đề được chọn
     const selectedOption = document.querySelector('input[name="test-selection"]:checked');
     if (selectedOption) {
       quizState.selectedQuestionFile = selectedOption.value;
+    }
+    
+    // Lấy chế độ được chọn
+    const selectedMode = document.querySelector('input[name="mode-selection"]:checked');
+    if (selectedMode) {
+      quizState.mode = selectedMode.value;
     }
     
     // Ẩn màn hình chọn bộ đề
@@ -101,6 +155,9 @@ function setupQuizSelection() {
       document.querySelector('.quiz-info').style.display = 'flex';
       document.getElementById('quiz-container').style.display = 'grid';
       
+      // Cập nhật giao diện theo chế độ
+      updateUIForMode();
+      
       // Khởi tạo quiz với dữ liệu đã load
       initializeQuiz();
     } else {
@@ -110,10 +167,60 @@ function setupQuizSelection() {
   });
 }
 
+// Cập nhật giao diện theo chế độ
+function updateUIForMode() {
+  const timerContainer = document.getElementById('timer-container');
+  const modeIndicator = document.getElementById('mode-indicator');
+  const modeText = document.getElementById('mode-text');
+  const studyControls = document.getElementById('study-controls');
+  const submitButton = document.getElementById('submit-button');
+  
+  if (quizState.mode === 'study') {
+    // Ẩn timer trong study mode
+    if (timerContainer) {
+      timerContainer.style.display = 'none';
+    }
+    
+    // Hiển thị chỉ báo chế độ study
+    if (modeIndicator) {
+      modeIndicator.style.display = 'block';
+    }
+    if (modeText) {
+      modeText.textContent = 'Chế độ học';
+    }
+    
+    // Ẩn nút submit, hiện study controls
+    if (submitButton) {
+      submitButton.style.display = 'none';
+    }
+    if (studyControls) {
+      studyControls.style.display = 'block';
+    }
+  } else {
+    // Exam mode - hiển thị timer, ẩn study controls
+    if (timerContainer) {
+      timerContainer.style.display = 'block';
+    }
+    if (modeIndicator) {
+      modeIndicator.style.display = 'none';
+    }
+    if (studyControls) {
+      studyControls.style.display = 'none';
+    }
+    if (submitButton) {
+      submitButton.style.display = 'block';
+    }
+  }
+}
+
 // Khởi tạo bài kiểm tra
 function initializeQuiz() {
   // Khởi tạo các câu trả lời trống
   quizState.answers = Array(quizData.questions.length).fill(null);
+  
+  // Reset study mode state
+  quizState.studyMode.answerRevealed = false;
+  quizState.studyMode.currentAnswer = null;
   
   // Tạo khung hiển thị chỉ mục câu hỏi
   createQuestionIndex();
@@ -137,14 +244,20 @@ function initializeQuiz() {
     passPercentElement.textContent = quizData.pass_percent;
   }
   
-  // Khởi tạo timer
-  startTimer();
+  // Khởi tạo timer chỉ trong exam mode
+  if (quizState.mode === 'exam') {
+    startTimer();
+  }
   
   // Xử lý nút điều hướng
   setupNavigation();
   
-  // Xử lý nút nộp bài
-  setupSubmitButton();
+  // Xử lý nút nộp bài hoặc study controls
+  if (quizState.mode === 'exam') {
+    setupSubmitButton();
+  } else {
+    setupStudyControls();
+  }
   
   quizState.quizStarted = true;
 }
@@ -199,6 +312,15 @@ function createQuestionIndex() {
 function displayQuestion(index) {
   const question = quizData.questions[index];
   const questionContainer = document.getElementById('question-container');
+  
+  // Reset study mode state cho câu hỏi mới
+  quizState.studyMode.answerRevealed = false;
+  quizState.studyMode.currentAnswer = null;
+  
+  // Reset câu trả lời cho câu hỏi mới trong study mode
+  if (quizState.mode === 'study') {
+    quizState.answers[index] = null;
+  }
   
   // Cập nhật thông tin câu hỏi hiện tại
   const currentQuestionElement = document.getElementById('current-question');
@@ -317,6 +439,15 @@ function displayQuestion(index) {
     questionContainer.appendChild(questionElement);
   }
   
+  // Cập nhật study controls cho câu hỏi mới
+  if (quizState.mode === 'study') {
+    const checkButton = document.getElementById('check-answer-button');
+    const nextButton = document.getElementById('next-question-button');
+    
+    if (checkButton) checkButton.style.display = 'block';
+    if (nextButton) nextButton.style.display = 'none';
+  }
+  
   // Cập nhật tiến trình
   updateProgress();
   
@@ -329,10 +460,17 @@ function displayQuestion(index) {
 
 // Cập nhật thanh tiến trình
 function updateProgress() {
-  const answeredQuestions = quizState.answers.filter(answer => answer !== null).length;
   const completedQuestionsElement = document.getElementById('completed-questions');
   if (completedQuestionsElement) {
-    completedQuestionsElement.textContent = answeredQuestions;
+    if (quizState.mode === 'study') {
+      // Trong study mode, hiển thị số câu đã trả lời
+      const answeredQuestions = quizState.answers.filter(answer => answer !== null).length;
+      completedQuestionsElement.textContent = answeredQuestions;
+    } else {
+      // Trong exam mode, hiển thị số câu đã trả lời
+      const answeredQuestions = quizState.answers.filter(answer => answer !== null).length;
+      completedQuestionsElement.textContent = answeredQuestions;
+    }
   }
   
   // Cập nhật khung chỉ mục câu hỏi
@@ -384,6 +522,122 @@ function setupNavigation() {
         displayQuestion(quizState.currentQuestion + 1);
       }
     });
+  }
+}
+
+// Xử lý study controls
+function setupStudyControls() {
+  const checkAnswerButton = document.getElementById('check-answer-button');
+  const nextQuestionButton = document.getElementById('next-question-button');
+  
+  if (checkAnswerButton) {
+    checkAnswerButton.addEventListener('click', () => {
+      checkCurrentAnswer();
+    });
+  }
+  
+  if (nextQuestionButton) {
+    nextQuestionButton.addEventListener('click', () => {
+      goToNextQuestion();
+    });
+  }
+}
+
+// Kiểm tra đáp án hiện tại trong study mode
+function checkCurrentAnswer() {
+  const currentIndex = quizState.currentQuestion;
+  const question = quizData.questions[currentIndex];
+  const userAnswer = quizState.answers[currentIndex];
+  
+  if (userAnswer === null || (Array.isArray(userAnswer) && userAnswer.length === 0)) {
+    alert('Vui lòng chọn một đáp án trước khi kiểm tra!');
+    return;
+  }
+  
+  // Hiển thị đáp án đúng/sai
+  revealAnswer(currentIndex, question, userAnswer);
+  
+  // Ẩn nút "Kiểm tra đáp án", hiện nút "Câu tiếp theo"
+  const checkButton = document.getElementById('check-answer-button');
+  const nextButton = document.getElementById('next-question-button');
+  
+  if (checkButton) checkButton.style.display = 'none';
+  if (nextButton) nextButton.style.display = 'block';
+  
+  // Cập nhật trạng thái
+  quizState.studyMode.answerRevealed = true;
+}
+
+// Hiển thị đáp án đúng/sai
+function revealAnswer(questionIndex, question, userAnswer) {
+  const answersList = document.querySelectorAll('.answer-item');
+  const isMultiSelect = question.assessment_type === 'multi-select';
+  const correctIndices = question.correct_response.map(response => {
+    return 'abcdefghijklmnopqrstuvwxyz'.indexOf(response);
+  });
+  
+  answersList.forEach((answerItem, answerIndex) => {
+    // Xóa các class cũ
+    answerItem.classList.remove('correct', 'incorrect', 'selected');
+    
+    // Đánh dấu đáp án đúng
+    if (correctIndices.includes(answerIndex)) {
+      answerItem.classList.add('correct');
+    }
+    
+    // Đánh dấu đáp án người dùng chọn (nếu sai)
+    if (isMultiSelect) {
+      if (userAnswer.includes(answerIndex) && !correctIndices.includes(answerIndex)) {
+        answerItem.classList.add('incorrect');
+      }
+    } else {
+      if (answerIndex === userAnswer && !correctIndices.includes(answerIndex)) {
+        answerItem.classList.add('incorrect');
+      }
+    }
+  });
+  
+  // Hiển thị giải thích
+  showExplanation(question);
+}
+
+// Hiển thị giải thích
+function showExplanation(question) {
+  const questionContainer = document.getElementById('question-container');
+  
+  // Xóa giải thích cũ nếu có
+  const oldExplanation = questionContainer.querySelector('.explanation');
+  if (oldExplanation) {
+    oldExplanation.remove();
+  }
+  
+  // Tạo phần giải thích mới
+  const explanation = document.createElement('div');
+  explanation.className = 'explanation';
+  explanation.innerHTML = `<h3>Giải thích:</h3>${question.prompt.explanation}`;
+  
+  questionContainer.appendChild(explanation);
+}
+
+
+// Chuyển đến câu hỏi tiếp theo
+function goToNextQuestion() {
+  const nextIndex = quizState.currentQuestion + 1;
+  
+  if (nextIndex < quizData.questions.length) {
+    displayQuestion(nextIndex);
+  } else {
+    if (quizState.mode === 'study') {
+      alert(`Chúc mừng! Bạn đã hoàn thành tất cả ${quizData.questions.length} câu hỏi trong bộ đề này!`);
+      
+      // Ẩn study controls
+      const checkButton = document.getElementById('check-answer-button');
+      const nextButton = document.getElementById('next-question-button');
+      if (checkButton) checkButton.style.display = 'none';
+      if (nextButton) nextButton.style.display = 'none';
+    } else {
+      alert('Bạn đã hoàn thành tất cả câu hỏi!');
+    }
   }
 }
 

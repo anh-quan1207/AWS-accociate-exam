@@ -60,6 +60,15 @@ h1 {
   font-weight: bold;
 }
 
+.quiz-mode {
+  background-color: var(--secondary);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
 #quiz-container {
   display: grid;
   grid-template-columns: 1fr 250px;
@@ -267,6 +276,25 @@ input[type="radio"] {
   transform: translateY(-2px);
 }
 
+/* Study mode controls */
+.study-controls {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.study-controls .btn {
+  min-width: 150px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
 .controls {
   display: flex;
   justify-content: space-between;
@@ -360,6 +388,25 @@ input[type="radio"] {
     padding: 10px 16px;
     font-size: 14px;
   }
+  
+  .mode-options {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .mode-item {
+    min-width: 100%;
+    max-width: 100%;
+  }
+  
+  .study-controls {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .study-controls .btn {
+    min-width: 200px;
+  }
 }
 
 .detailed-results {
@@ -416,6 +463,65 @@ input[type="radio"] {
 .quiz-selection h2 {
   margin-bottom: 20px;
   color: var(--primary);
+}
+
+/* Styles cho mode selection */
+.mode-selection {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.mode-selection h3 {
+  margin-bottom: 15px;
+  color: var(--primary);
+  font-size: 18px;
+}
+
+.mode-options {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.mode-item {
+  flex: 1;
+  min-width: 250px;
+  max-width: 300px;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: white;
+}
+
+.mode-item:hover {
+  border-color: var(--primary);
+  background-color: #f0f8ff;
+}
+
+.mode-item input[type="radio"] {
+  margin-right: 10px;
+}
+
+.mode-item label {
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  color: var(--primary);
+  display: block;
+  margin-bottom: 5px;
+}
+
+.mode-description {
+  font-size: 14px;
+  color: #6c757d;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .test-list {

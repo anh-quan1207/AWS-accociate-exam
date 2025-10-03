@@ -10,13 +10,29 @@
   <div class="container">
     <header>
       <h1>AWS Certified Cloud Practitioner</h1>
-      <p>Bài kiểm tra thực hành</p>
-      <p>Để đạt yêu cầu, bạn cần đạt tối thiểu 70% số điểm tổng thể.</p>
     </header>
     
     <!-- Màn hình chọn bộ đề -->
     <div id="quiz-selection" class="quiz-selection">
       <h2>Chọn bộ đề kiểm tra</h2>
+      
+      <!-- Chọn chế độ -->
+      <div class="mode-selection">
+        <h3>Chọn chế độ:</h3>
+        <div class="mode-options">
+          <div class="mode-item">
+            <input type="radio" id="mode-exam" name="mode-selection" value="exam" checked>
+            <label for="mode-exam">Chế độ thi (Exam Mode)</label>
+            <p class="mode-description">Làm bài thi với thời gian và tính điểm</p>
+          </div>
+          <div class="mode-item">
+            <input type="radio" id="mode-study" name="mode-selection" value="study">
+            <label for="mode-study">Chế độ học (Study Mode)</label>
+            <p class="mode-description">Học tập với đáp án ngay lập tức, không tính thời gian</p>
+          </div>
+        </div>
+      </div>
+      
       <div class="test-list">
         <div class="test-item">
           <input type="radio" id="test-full" name="test-selection" value="full_questions.json" checked>
@@ -52,8 +68,11 @@
         Câu hỏi: <span id="current-question">0</span>/<span id="total-questions">0</span> | 
         Đã trả lời: <span id="completed-questions">0</span> câu
       </div>
-      <div class="quiz-timer">
+      <div class="quiz-timer" id="timer-container">
         Thời gian: <span id="timer">00:00</span>
+      </div>
+      <div class="quiz-mode" id="mode-indicator" style="display: none;">
+        <span id="mode-text">Chế độ thi</span>
       </div>
     </div>
     
@@ -69,6 +88,12 @@
         <div class="question-container" id="question-container">
           <!-- Nội dung câu hỏi sẽ được tạo bằng JavaScript -->
         </div>
+        
+        <!-- Study mode controls -->
+        <div id="study-controls" class="study-controls" style="display: none;">
+          <button id="check-answer-button" class="btn btn-primary">Kiểm tra đáp án</button>
+          <button id="next-question-button" class="btn btn-secondary" style="display: none;">Câu tiếp theo</button>
+        </div>
       </div>
       
       <!-- Khung chỉ mục câu hỏi sẽ được tạo bằng JavaScript -->
@@ -82,6 +107,7 @@
     </footer>
   </div>
   
+  <script src="js/data.js"></script>
   <script src="js/quiz.js"></script>
 </body>
 </html> 
